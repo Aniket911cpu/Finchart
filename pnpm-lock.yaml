@@ -115,6 +115,9 @@ importers:
 
   apps/worker:
     dependencies:
+      '@finchart/types':
+        specifier: workspace:^
+        version: link:../../packages/types
       axios:
         specifier: ^1.7.2
         version: 1.16.0
@@ -149,6 +152,9 @@ importers:
       '@fastify/websocket':
         specifier: ^11.2.0
         version: 11.2.0
+      '@finchart/types':
+        specifier: workspace:^
+        version: link:../../packages/types
       fastify:
         specifier: ^4.26.2
         version: 4.29.1

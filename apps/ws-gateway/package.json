@@ -9,6 +9,7 @@
   },
   "dependencies": {
     "@fastify/websocket": "^11.2.0",
+    "@finchart/types": "workspace:^",
     "fastify": "^4.26.2",
     "ioredis": "^5.10.1",
     "ws": "^8.16.0"
