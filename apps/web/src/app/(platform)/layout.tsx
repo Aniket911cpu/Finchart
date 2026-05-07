@@ -2,7 +2,9 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Activity, LineChart, Bell, Compass, Settings, BarChart2, Star, ChevronRight, LogOut, User } from 'lucide-react';
-import { useSession, signOut } from 'next-auth/react';
+import { useAuth } from '../../components/auth/AuthProvider';
+import { auth } from '../../lib/firebase';
+import { signOut } from 'firebase/auth';
 import { useState } from 'react';
 
 const navItems = [
@@ -14,7 +16,7 @@ const navItems = [
 
 export default function PlatformLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const { data: session } = useSession();
+  const { user } = useAuth();
   const [collapsed, setCollapsed] = useState(false);
 
   return (
@@ -65,20 +67,20 @@ export default function PlatformLayout({ children }: { children: React.ReactNode
 
         {/* User Profile */}
         <div className="border-t border-border p-2">
-          {session?.user ? (
+          {user ? (
             <div className={`flex items-center rounded-lg p-2 ${collapsed ? 'justify-center' : 'space-x-3'}`}>
               <div className="w-8 h-8 rounded-full bg-accent-blue/20 text-accent-blue flex items-center justify-center text-sm font-bold flex-shrink-0 border border-accent-blue/20">
-                {session.user.name?.[0]?.toUpperCase() || 'U'}
+                {user.displayName?.[0]?.toUpperCase() || user.email?.[0]?.toUpperCase() || 'U'}
               </div>
               {!collapsed && (
                 <div className="flex-1 min-w-0">
-                  <div className="text-xs font-medium truncate">{session.user.name}</div>
-                  <div className="text-xs text-text-muted truncate">{session.user.email}</div>
+                  <div className="text-xs font-medium truncate">{user.displayName || 'Trader'}</div>
+                  <div className="text-xs text-text-muted truncate">{user.email}</div>
                 </div>
               )}
               {!collapsed && (
                 <button
-                  onClick={() => signOut()}
+                  onClick={() => signOut(auth)}
                   title="Sign out"
                   className="p-1 text-text-muted hover:text-negative rounded transition-colors"
                 >
@@ -88,7 +90,7 @@ export default function PlatformLayout({ children }: { children: React.ReactNode
             </div>
           ) : (
             <Link
-              href="/api/auth/signin"
+              href="/login"
               className={`flex items-center justify-center rounded-lg p-2 text-text-secondary hover:bg-bg-tertiary hover:text-text-primary transition-colors`}
             >
               <User size={18} />

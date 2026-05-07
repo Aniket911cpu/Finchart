@@ -10,6 +10,7 @@ import userRoutes from './modules/user/user.router';
 import authRoutes from './modules/auth/auth.router';
 import notificationsRoutes from './modules/notifications/notifications.router';
 import aiRoutes from './modules/ai/ai.router';
+import paymentsRouter from './modules/payments/payments.router';
 
 export function buildApp() {
   const app = Fastify({
@@ -52,6 +53,7 @@ export function buildApp() {
     protectedApp.register(userRoutes,         { prefix: '/user' });
     protectedApp.register(notificationsRoutes,{ prefix: '/notifications' });
     protectedApp.register(aiRoutes,           { prefix: '/ai' });
+    protectedApp.register(paymentsRouter,     { prefix: '/payments' });
   });
 
   return app;

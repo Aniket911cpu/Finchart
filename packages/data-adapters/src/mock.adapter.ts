@@ -26,9 +26,17 @@ export class MockAdapter implements MarketAdapter {
     // Align start time to interval
     let currentTime = Math.ceil(from / intervalSeconds) * intervalSeconds;
     
+    // Trend state for realistic movement
+    let trend = 0;
+    
     while (currentTime <= to) {
-      const volatility = currentPrice * 0.002; // 0.2% volatility
-      const change = (random() - 0.5) * volatility;
+      // Every 50 bars, change trend
+      if (bars.length % 50 === 0) {
+        trend = (random() - 0.5) * 0.005; 
+      }
+      
+      const volatility = currentPrice * 0.003; // 0.3% volatility
+      const change = (random() - 0.5) * volatility + trend * currentPrice;
       
       const open = currentPrice;
       const close = currentPrice + change;
