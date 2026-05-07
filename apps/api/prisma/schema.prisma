@@ -29,6 +29,9 @@ model User {
   drawings      Drawing[]
   indicators    SavedIndicator[]
   notifications Notification[]
+  settings      UserSettings?
+  apiKeys       ApiKey[]
+  alertHistory  AlertHistory[]
 }
 
 model Account {
@@ -241,4 +244,39 @@ model MarketSymbol {
 
   @@index([assetClass])
   @@index([exchange])
+}
+
+// ─── SETTINGS & API KEYS ─────────────────────────────────────────
+
+model UserSettings {
+  id                String  @id @default(cuid())
+  userId            String  @unique
+  defaultSymbol     String  @default("BTC/USDT")
+  defaultTimeframe  String  @default("60")
+  emailAlerts       Boolean @default(false)
+  browserAlerts     Boolean @default(true)
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model ApiKey {
+  id        String   @id @default(cuid())
+  userId    String
+  key       String   @unique
+  label     String
+  createdAt DateTime @default(now())
+  lastUsed  DateTime?
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// ─── ALERT HISTORY ───────────────────────────────────────────────
+
+model AlertHistory {
+  id             String   @id @default(cuid())
+  alertId        String
+  userId         String
+  symbol         String
+  condition      String
+  triggeredAt    DateTime @default(now())
+  priceAtTrigger Float
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
