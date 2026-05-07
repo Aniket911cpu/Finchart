@@ -105,7 +105,7 @@ export default function AlertsPage() {
                     <td className="p-4">
                       <span className="bg-bg-tertiary px-2 py-1 rounded text-xs font-mono">{alert.condition}</span>
                     </td>
-                    <td className="p-4 font-medium">{alert.value.toLocaleString()}</td>
+                    <td className="p-4 font-medium">{alert.price.toLocaleString()}</td>
                     <td className="p-4">
                       {alert.triggered ? (
                         <span className="inline-flex items-center space-x-1 text-warning bg-warning/10 px-2 py-0.5 rounded text-xs font-medium">

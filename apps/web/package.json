@@ -12,7 +12,8 @@
     "@auth/prisma-adapter": "^2.11.2",
     "@finchart/indicators": "workspace:^",
     "@tanstack/react-query": "^5.100.9",
-    "lightweight-charts": "^5.2.0",
+    "@types/uuid": "^11.0.0",
+    "lightweight-charts": "^4.2.1",
     "lucide-react": "^1.14.0",
     "next": "16.2.5",
     "next-auth": "4",
@@ -20,6 +21,8 @@
     "react": "19.2.4",
     "react-dom": "19.2.4",
     "react-hot-toast": "^2.6.0",
+    "swr": "^2.4.1",
+    "uuid": "^14.0.0",
     "zustand": "^5.0.13"
   },
   "devDependencies": {

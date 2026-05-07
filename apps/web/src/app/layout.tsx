@@ -1,15 +1,11 @@
 import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
 import './globals.css';
-import { ThemeProvider } from '@/components/ThemeProvider';
 import { AuthProvider } from '../components/auth/AuthProvider';
 import { Toaster } from 'react-hot-toast';
 
-const inter = Inter({ subsets: ['latin'] });
-
 export const metadata: Metadata = {
-  title: 'FinChart Pro',
-  description: 'TradingView-Inspired Trading Platform',
+  title: 'FinChart Pro — Professional Trading Analysis',
+  description: 'AI-powered financial charting platform for stocks, crypto, forex and more.',
 };
 
 export default function RootLayout({
@@ -18,18 +14,20 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <body className={`${inter.className} min-h-screen antialiased`}>
+    <html lang="en" className="dark">
+      <body className="min-h-screen antialiased">
         <AuthProvider>
-          <ThemeProvider
-            attribute="class"
-            defaultTheme="dark"
-            enableSystem
-            disableTransitionOnChange
-          >
-            {children}
-            <Toaster position="bottom-right" />
-          </ThemeProvider>
+          {children}
+          <Toaster
+            position="bottom-right"
+            toastOptions={{
+              style: {
+                background: '#111827',
+                color: '#E8E9EC',
+                border: '1px solid rgba(255,255,255,0.07)',
+              },
+            }}
+          />
         </AuthProvider>
       </body>
     </html>

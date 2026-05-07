@@ -1,7 +1,7 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
 import { createChart, IChartApi, ISeriesApi, Time } from 'lightweight-charts';
-import { useTheme } from 'next-themes';
+
 import { useMarketData } from '../../hooks/useMarketData';
 import { useChartStore } from '../../store/chartStore';
 import { wsClient, TickEvent } from '../../lib/ws-client';
@@ -30,7 +30,8 @@ export default function ChartEngine() {
     macdHist?: ISeriesApi<"Histogram">;
   }>({});
 
-  const { theme } = useTheme();
+  // App is always dark mode
+  const theme = 'dark';
   const activeSymbol = useChartStore((s) => s.activeSymbol);
   const timeframe = useChartStore((s) => s.timeframe);
   const chartType = useChartStore((s) => s.chartType);

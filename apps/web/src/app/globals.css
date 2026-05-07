@@ -1,38 +1,97 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+@import "tailwindcss";
 
+/* ─── Tailwind v4 Theme Tokens ────────────────────────────────────────────── */
+@theme {
+  /* Background colors */
+  --color-bg-primary:   #0A0D14;
+  --color-bg-secondary: #111827;
+  --color-bg-tertiary:  #1a2035;
+
+  /* Text colors */
+  --color-text-primary:   #E8E9EC;
+  --color-text-secondary: #8B92A5;
+  --color-text-muted:     #4B5563;
+
+  /* Border */
+  --color-border: rgba(255, 255, 255, 0.07);
+
+  /* Accent — Blue */
+  --color-accent-blue:       #2962FF;
+  --color-accent-blue-hover: #1E4FCC;
+
+  /* Market signal colors */
+  --color-positive: #26a69a;
+  --color-negative: #ef5350;
+  --color-warning:  #f59e0b;
+
+  /* Legacy aliases */
+  --color-accent-green: #26a69a;
+  --color-accent-red:   #ef5350;
+  --color-accent-gold:  #f59e0b;
+
+  /* Typography */
+  --font-family-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
+
+  /* Border radius */
+  --radius-lg:  0.75rem;
+  --radius-xl:  1rem;
+  --radius-2xl: 1.5rem;
+
+  /* Animation */
+  --animate-pulse-slow: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* ─── Base ────────────────────────────────────────────────────────────────── */
 @layer base {
-  :root {
-    --bg-primary: #F8F9FA;
-    --bg-secondary: #FFFFFF;
-    --bg-tertiary: #F1F3F5;
-    --text-primary: #1A1D20;
-    --text-secondary: #495057;
-    --border: #E9ECEF;
-    
-    --accent-green: #0CA678;
-    --accent-red: #FA5252;
-    --accent-blue: #339AF0;
-    --accent-gold: #FAB005;
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
   }
 
-  .dark {
-    --bg-primary: #0D0D0F;
-    --bg-secondary: #141418;
-    --bg-tertiary: #1A1C22;
-    --text-primary: #E8E9EC;
-    --text-secondary: #9B9EA4;
-    --border: rgba(255, 255, 255, 0.08);
+  html {
+    font-family: var(--font-family-sans);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
 
-    --accent-green: #26A69A;
-    --accent-red: #EF5350;
-    --accent-blue: #2962FF;
-    --accent-gold: #FFD700;
+  body {
+    background-color: var(--color-bg-primary);
+    color: var(--color-text-primary);
+    min-height: 100vh;
+  }
+
+  /* Thin scrollbar */
+  ::-webkit-scrollbar         { width: 4px; height: 4px; }
+  ::-webkit-scrollbar-track   { background: transparent; }
+  ::-webkit-scrollbar-thumb   { background: rgba(255,255,255,0.10); border-radius: 2px; }
+  ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.20); }
+}
+
+/* ─── Components ─────────────────────────────────────────────────────────── */
+@layer components {
+  /* Glass card */
+  .glass {
+    background: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.07);
   }
 }
 
-body {
-  background-color: var(--bg-primary);
-  color: var(--text-primary);
+/* ─── Utilities ──────────────────────────────────────────────────────────── */
+@layer utilities {
+  .text-positive { color: var(--color-positive); }
+  .text-negative { color: var(--color-negative); }
+  .text-warning  { color: var(--color-warning);  }
+
+  .bg-positive { background-color: var(--color-positive); }
+  .bg-negative { background-color: var(--color-negative); }
+
+  .glow-blue    { box-shadow: 0 0 30px rgba(41,98,255,0.35); }
+  .glow-blue-sm { box-shadow: 0 0 15px rgba(41,98,255,0.25); }
+
+  /* Hide scrollbar but keep scrollable */
+  .no-scrollbar::-webkit-scrollbar { display: none; }
+  .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 }

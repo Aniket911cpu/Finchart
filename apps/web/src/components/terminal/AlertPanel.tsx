@@ -16,7 +16,7 @@ export function AlertPanel({ onClose }: { onClose: () => void }) {
 
   // Subscribe to user alerts WS channel
   useEffect(() => {
-    if (session?.user?.id) {
+    if ((session?.user as any)?.id) {
       // The ws-client doesn't have an alert subscription method out of the box,
       // so we use the raw socket if available. In a full implementation,
       // we'd add `subscribeAlerts` to wsClient.

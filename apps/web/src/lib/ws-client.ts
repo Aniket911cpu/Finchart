@@ -22,6 +22,10 @@ class WSClient {
     this.url = url;
   }
 
+  get socket() {
+    return this.ws;
+  }
+
   connect() {
     if (this.ws && (this.ws.readyState === WebSocket.CONNECTING || this.ws.readyState === WebSocket.OPEN)) {
       return;

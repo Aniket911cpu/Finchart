@@ -1,3 +1,6 @@
+// Tailwind CSS v4 — design tokens are configured in globals.css via @theme block.
+// This file is kept for editor tooling compatibility only.
+// In Tailwind v4, the JS config is NOT used for theme tokens — use globals.css @theme.
 import type { Config } from "tailwindcss";
 
 const config: Config = {
@@ -7,28 +10,8 @@ const config: Config = {
     "./src/app/**/*.{js,ts,jsx,tsx,mdx}",
   ],
   darkMode: "class",
-  theme: {
-    extend: {
-      colors: {
-        bg: {
-          primary: "var(--bg-primary)",
-          secondary: "var(--bg-secondary)",
-          tertiary: "var(--bg-tertiary)",
-        },
-        text: {
-          primary: "var(--text-primary)",
-          secondary: "var(--text-secondary)",
-        },
-        border: "var(--border)",
-        accent: {
-          green: "var(--accent-green)",
-          red: "var(--accent-red)",
-          blue: "var(--accent-blue)",
-          gold: "var(--accent-gold)",
-        }
-      },
-    },
-  },
+  theme: { extend: {} },
   plugins: [],
 };
+
 export default config;

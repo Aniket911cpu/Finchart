@@ -37,3 +37,31 @@ export async function searchUDFSymbols(query: string) {
   if (!res.ok) return [];
   return res.json();
 }
+
+// Basic Axios-like wrapper for the app to use
+export const apiClient = {
+  get: async <T>(path: string): Promise<{ data: T }> => {
+    const res = await fetch(`${API_URL}${path}`);
+    if (!res.ok) throw new Error('Network error');
+    const data = await res.json();
+    return { data };
+  },
+  post: async <T>(path: string, body: any): Promise<{ data: T }> => {
+    const res = await fetch(`${API_URL}${path}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+    if (!res.ok) throw new Error('Network error');
+    const data = await res.json();
+    return { data };
+  },
+  delete: async <T>(path: string): Promise<{ data: T }> => {
+    const res = await fetch(`${API_URL}${path}`, {
+      method: 'DELETE',
+    });
+    if (!res.ok) throw new Error('Network error');
+    const data = await res.json();
+    return { data };
+  }
+};

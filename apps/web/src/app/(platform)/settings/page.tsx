@@ -18,14 +18,14 @@ export default function SettingsPage() {
   useEffect(() => {
     // Fetch settings and API keys
     fetch('http://localhost:3001/user/settings', {
-      headers: { Authorization: `Bearer ${session?.user?.id}` } // Note: real app uses proper token
+      headers: { Authorization: `Bearer ${(session?.user as any)?.id}` } // Note: real app uses proper token
     })
       .then(r => r.ok ? r.json() : null)
       .then(data => data && setSettings(data))
       .catch(console.error);
 
     fetch('http://localhost:3001/user/api-keys', {
-      headers: { Authorization: `Bearer ${session?.user?.id}` }
+      headers: { Authorization: `Bearer ${(session?.user as any)?.id}` }
     })
       .then(r => r.ok ? r.json() : [])
       .then(data => setApiKeys(data || []))
@@ -38,7 +38,7 @@ export default function SettingsPage() {
         method: 'PATCH',
         headers: { 
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${session?.user?.id}`
+          Authorization: `Bearer ${(session?.user as any)?.id}`
         },
         body: JSON.stringify(settings)
       });
@@ -54,7 +54,7 @@ export default function SettingsPage() {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${session?.user?.id}`
+          Authorization: `Bearer ${(session?.user as any)?.id}`
         },
         body: JSON.stringify({ label: `Key ${apiKeys.length + 1}` })
       });

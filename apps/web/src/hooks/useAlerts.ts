@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { api } from '../lib/api';
+import { apiClient as api } from '../lib/api-client';
 
 export interface Alert {
   id: string;
@@ -8,6 +8,7 @@ export interface Alert {
   price: number;
   message: string;
   createdAt: string;
+  triggered: boolean;
 }
 
 export function useAlerts() {
