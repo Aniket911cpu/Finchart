@@ -1,0 +1,20 @@
+export function sma(closes: number[], period: number): (number | null)[] {
+  const result: (number | null)[] = [];
+  let sum = 0;
+
+  for (let i = 0; i < closes.length; i++) {
+    sum += closes[i];
+
+    if (i >= period) {
+      sum -= closes[i - period];
+    }
+
+    if (i >= period - 1) {
+      result.push(sum / period);
+    } else {
+      result.push(null);
+    }
+  }
+
+  return result;
+}
