@@ -1,18 +1,18 @@
 'use client';
 import { useState, useEffect } from 'react';
-import { useSession } from 'next-auth/react';
+import { useAuth } from '../auth/AuthProvider';
 import { useChartStore } from '../../store/chartStore';
 import { Plus, X, ChevronRight } from 'lucide-react';
 
 export function WatchlistSidebar() {
-  const { data: session } = useSession();
+  const { user } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const [watchlists, setWatchlists] = useState<any[]>([]);
   const setSymbol = useChartStore((s) => s.setSymbol);
   
   // Mock data for demo purposes, since full backend sync requires API client with Bearer token
   useEffect(() => {
-    if (session) {
+    if (user) {
       setWatchlists([
         {
           id: '1',
@@ -34,7 +34,7 @@ export function WatchlistSidebar() {
     } else {
       setWatchlists([]);
     }
-  }, [session]);
+  }, [user]);
 
   if (!isOpen) {
     return (
@@ -60,7 +60,7 @@ export function WatchlistSidebar() {
       </div>
       
       <div className="flex-1 overflow-y-auto">
-        {!session ? (
+        {!user ? (
           <div className="p-4 text-center text-text-secondary text-sm mt-10">
             Sign in to create custom watchlists and sync them across devices.
           </div>

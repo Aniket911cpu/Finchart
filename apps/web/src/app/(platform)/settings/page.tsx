@@ -1,11 +1,11 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { User, Bell, Key, Palette, Save } from 'lucide-react';
-import { useSession } from 'next-auth/react';
+import { useAuth } from '../../../components/auth/AuthProvider';
 import toast from 'react-hot-toast';
 
 export default function SettingsPage() {
-  const { data: session } = useSession();
+  const { user } = useAuth();
   const [activeTab, setActiveTab] = useState('profile');
   const [settings, setSettings] = useState({
     defaultSymbol: 'BTC/USDT',
@@ -17,28 +17,31 @@ export default function SettingsPage() {
 
   useEffect(() => {
     // Fetch settings and API keys
-    fetch('http://localhost:3001/user/settings', {
-      headers: { Authorization: `Bearer ${(session?.user as any)?.id}` } // Note: real app uses proper token
-    })
-      .then(r => r.ok ? r.json() : null)
-      .then(data => data && setSettings(data))
-      .catch(console.error);
+    if (user?.uid) {
+      fetch('http://localhost:3001/user/settings', {
+        headers: { Authorization: `Bearer ${user.uid}` } // Note: real app uses proper token
+      })
+        .then(r => r.ok ? r.json() : null)
+        .then(data => data && setSettings(data))
+        .catch(console.error);
 
-    fetch('http://localhost:3001/user/api-keys', {
-      headers: { Authorization: `Bearer ${(session?.user as any)?.id}` }
-    })
-      .then(r => r.ok ? r.json() : [])
-      .then(data => setApiKeys(data || []))
-      .catch(console.error);
-  }, [session]);
+      fetch('http://localhost:3001/user/api-keys', {
+        headers: { Authorization: `Bearer ${user.uid}` }
+      })
+        .then(r => r.ok ? r.json() : [])
+        .then(data => setApiKeys(data || []))
+        .catch(console.error);
+    }
+  }, [user]);
 
   const saveSettings = async () => {
+    if (!user?.uid) return;
     try {
       await fetch('http://localhost:3001/user/settings', {
         method: 'PATCH',
         headers: { 
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${(session?.user as any)?.id}`
+          Authorization: `Bearer ${user.uid}`
         },
         body: JSON.stringify(settings)
       });
@@ -49,12 +52,13 @@ export default function SettingsPage() {
   };
 
   const generateKey = async () => {
+    if (!user?.uid) return;
     try {
       const res = await fetch('http://localhost:3001/user/api-keys', {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${(session?.user as any)?.id}`
+          Authorization: `Bearer ${user.uid}`
         },
         body: JSON.stringify({ label: `Key ${apiKeys.length + 1}` })
       });
@@ -107,23 +111,27 @@ export default function SettingsPage() {
                 <h2 className="text-xl font-bold border-b border-border pb-4 mb-6">Profile Settings</h2>
                 
                 <div className="flex items-center space-x-4 mb-8">
-                  <div className="w-20 h-20 rounded-full bg-accent-blue/20 text-accent-blue flex items-center justify-center text-3xl font-bold border border-accent-blue/30">
-                    {session?.user?.name?.[0] || 'U'}
+                  <div className="w-20 h-20 rounded-full bg-accent-blue/20 text-accent-blue flex items-center justify-center text-3xl font-bold border border-accent-blue/30 overflow-hidden">
+                    {user?.photoURL ? (
+                      <img src={user.photoURL} alt="Avatar" className="w-full h-full object-cover" />
+                    ) : (
+                      <span>{user?.displayName?.[0] || user?.email?.[0]?.toUpperCase() || 'U'}</span>
+                    )}
                   </div>
                   <div>
-                    <div className="font-semibold text-lg">{session?.user?.name || 'Guest User'}</div>
-                    <div className="text-text-secondary">{session?.user?.email || 'No email provided'}</div>
+                    <div className="font-semibold text-lg">{user?.displayName || 'User'}</div>
+                    <div className="text-text-secondary">{user?.email || 'No email provided'}</div>
                   </div>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-2">
                     <label className="text-sm font-medium text-text-secondary">Display Name</label>
-                    <input type="text" defaultValue={session?.user?.name || ''} className="w-full bg-bg-tertiary border border-border rounded-lg px-4 py-2 focus:outline-none focus:border-accent-blue" />
+                    <input type="text" defaultValue={user?.displayName || ''} className="w-full bg-bg-tertiary border border-border rounded-lg px-4 py-2 focus:outline-none focus:border-accent-blue" />
                   </div>
                   <div className="space-y-2">
                     <label className="text-sm font-medium text-text-secondary">Email Address</label>
-                    <input type="email" defaultValue={session?.user?.email || ''} readOnly className="w-full bg-bg-tertiary/50 border border-border rounded-lg px-4 py-2 text-text-muted cursor-not-allowed" />
+                    <input type="email" defaultValue={user?.email || ''} readOnly className="w-full bg-bg-tertiary/50 border border-border rounded-lg px-4 py-2 text-text-muted cursor-not-allowed" />
                   </div>
                 </div>
               </div>

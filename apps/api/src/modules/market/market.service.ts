@@ -1,9 +1,10 @@
-import { SmartProviderRouter } from '@finchart/data-adapters';
+import { SmartProviderRouter, MockAdapter } from '@finchart/data-adapters';
 import { redis } from '../../shared/redis';
 import { OHLCV, SymbolInfo } from '@finchart/data-adapters';
 
 export class MarketService {
   private router = new SmartProviderRouter();
+  private mockFallback = new MockAdapter();
 
   async getHistory(symbol: string, timeframe: string, from: number, to: number): Promise<OHLCV[]> {
     const cacheKey = `market:history:${symbol}:${timeframe}:${from}:${to}`;
@@ -18,7 +19,13 @@ export class MarketService {
 
     // Fetch from provider
     const provider = this.router.getProvider(symbol);
-    const data = await provider.getOHLCV(symbol, timeframe, from, to);
+    let data = await provider.getOHLCV(symbol, timeframe, from, to);
+
+    // MOCK FALLBACK: If provider fails or returns no data, use mock adapter
+    if (!data || data.length === 0) {
+      console.log(`Provider returned no data for ${symbol}. Falling back to MockAdapter.`);
+      data = await this.mockFallback.getOHLCV(symbol, timeframe, from, to);
+    }
 
     if (data && data.length > 0) {
       // Cache it for 60 seconds (or more if historical)

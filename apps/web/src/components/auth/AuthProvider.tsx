@@ -12,7 +12,12 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType>({ user: undefined, loading: true });
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, loading, error] = useAuthState(auth);
+  // Safe hook call even if auth is undefined
+  const [user, loading] = useAuthState(auth as any);
+  
+  if (!auth) {
+    return <>{children}</>;
+  }
   
   // Optional: Handle token refresh or custom claims here
   

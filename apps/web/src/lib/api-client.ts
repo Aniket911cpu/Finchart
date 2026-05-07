@@ -1,15 +1,20 @@
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
 export async function fetchUDFHistory(symbol: string, resolution: string, from: number, to: number) {
-  const url = new URL(`${API_URL}/udf/history`);
+  const url = new URL(`${API_URL}/market/history`);
   url.searchParams.append('symbol', symbol);
   url.searchParams.append('resolution', resolution);
   url.searchParams.append('from', from.toString());
   url.searchParams.append('to', to.toString());
 
+  console.log(`Fetching UDF History for ${symbol} (${resolution})...`);
   const res = await fetch(url.toString());
-  if (!res.ok) throw new Error('Failed to fetch history');
+  if (!res.ok) {
+    console.error(`API Fetch failed for ${symbol}: ${res.status}`);
+    throw new Error('Failed to fetch history');
+  }
   const data = await res.json();
+  console.log(`API Response for ${symbol}:`, data.s);
 
   if (data.s === 'ok') {
     const bars = [];
@@ -26,11 +31,16 @@ export async function fetchUDFHistory(symbol: string, resolution: string, from: 
     return bars;
   }
   
+  if (data.s === 'no_data') {
+    console.warn(`No data returned for ${symbol}`);
+    return [];
+  }
+  
   return [];
 }
 
 export async function searchUDFSymbols(query: string) {
-  const url = new URL(`${API_URL}/udf/search`);
+  const url = new URL(`${API_URL}/market/search`);
   url.searchParams.append('query', query);
   
   const res = await fetch(url.toString());

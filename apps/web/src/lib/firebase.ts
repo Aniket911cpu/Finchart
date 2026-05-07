@@ -10,8 +10,25 @@ const firebaseConfig = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
 };
 
-// Initialize Firebase
-const app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
-const auth = getAuth(app);
+const isConfigValid = !!firebaseConfig.apiKey && firebaseConfig.apiKey !== 'your_api_key_here';
+
+let app;
+let auth: any;
+
+if (isConfigValid) {
+  try {
+    app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
+    auth = getAuth(app);
+  } catch (error) {
+    console.error("Firebase initialization failed:", error);
+  }
+} else {
+  if (typeof window !== 'undefined') {
+    console.warn(
+      "EXTREMELY IMPORTANT: Firebase configuration is missing in .env.local. " +
+      "Authentication features will not function. Please update apps/web/.env.local with your Firebase keys."
+    );
+  }
+}
 
 export { app, auth };

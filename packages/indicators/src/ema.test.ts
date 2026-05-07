@@ -23,7 +23,7 @@ describe('EMA (Exponential Moving Average)', () => {
     const data = [10, 20, 30, 40, 50];
     const period = 3;
     const result = ema(data, period);
-    const k = 2 / (period + 1); // multiplier = 0.5
+    // k = 2 / (period + 1) = 0.5
     // EMA[3] = (40 - 20) * 0.5 + 20 = 30
     expect(result[3]).toBeCloseTo(30, 5);
     // EMA[4] = (50 - 30) * 0.5 + 30 = 40

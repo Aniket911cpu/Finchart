@@ -1,10 +1,10 @@
 'use client';
 import { useState } from 'react';
-import { useSession } from 'next-auth/react';
+import { useAuth } from '../auth/AuthProvider';
 import { Save, LayoutGrid, ChevronDown } from 'lucide-react';
 
 export function LayoutManager() {
-  const { data: session } = useSession();
+  const { user } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
 
   return (
@@ -22,7 +22,7 @@ export function LayoutManager() {
         <>
           <div className="fixed inset-0 z-40" onClick={() => setIsOpen(false)} />
           <div className="absolute top-full mt-2 right-0 w-56 bg-bg-secondary border border-border rounded-lg shadow-xl z-50 overflow-hidden py-1">
-            {!session ? (
+            {!user ? (
               <div className="p-4 text-xs text-text-secondary text-center">
                 Sign in to save layouts to the cloud.
               </div>

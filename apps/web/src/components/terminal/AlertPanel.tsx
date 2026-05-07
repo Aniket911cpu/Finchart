@@ -1,13 +1,13 @@
 import { useState, useEffect } from 'react';
 import { useAlerts } from '../../hooks/useAlerts';
 import { useChartStore } from '../../store/chartStore';
-import { useSession } from 'next-auth/react';
+import { useAuth } from '../auth/AuthProvider';
 import { Bell, BellOff, Plus, Trash2, X } from 'lucide-react';
 import { wsClient } from '../../lib/ws-client';
 import toast from 'react-hot-toast';
 
 export function AlertPanel({ onClose }: { onClose: () => void }) {
-  const { data: session } = useSession();
+  const { user } = useAuth();
   const { alerts, isLoading, createAlert, deleteAlert } = useAlerts();
   const activeSymbol = useChartStore(s => s.activeSymbol);
   
@@ -16,7 +16,7 @@ export function AlertPanel({ onClose }: { onClose: () => void }) {
 
   // Subscribe to user alerts WS channel
   useEffect(() => {
-    if ((session?.user as any)?.id) {
+    if (user?.uid) {
       // The ws-client doesn't have an alert subscription method out of the box,
       // so we use the raw socket if available. In a full implementation,
       // we'd add `subscribeAlerts` to wsClient.
@@ -44,7 +44,7 @@ export function AlertPanel({ onClose }: { onClose: () => void }) {
       if (wsClient.socket?.readyState === WebSocket.OPEN) {
         wsClient.socket.send(JSON.stringify({
           event: 'subscribe_alerts',
-          payload: { userId: (session?.user as any)?.id }
+          payload: { userId: user.uid }
         }));
       }
 
@@ -52,7 +52,7 @@ export function AlertPanel({ onClose }: { onClose: () => void }) {
         wsClient.socket?.removeEventListener('message', handleMessage);
       };
     }
-  }, [session]);
+  }, [user]);
 
   const handleCreate = async () => {
     if (!price || isNaN(Number(price))) return;
@@ -68,7 +68,7 @@ export function AlertPanel({ onClose }: { onClose: () => void }) {
     toast.success('Alert created');
   };
 
-  if (!session) {
+  if (!user) {
     return (
       <div className="w-80 h-full bg-bg-secondary border-l border-border flex flex-col items-center justify-center p-4">
         <BellOff size={48} className="text-text-muted mb-4" />

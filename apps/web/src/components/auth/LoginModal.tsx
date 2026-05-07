@@ -1,6 +1,8 @@
 'use client';
 import { useState } from 'react';
-import { signIn } from 'next-auth/react';
+import { signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, GithubAuthProvider } from 'firebase/auth';
+import { auth } from '../../lib/firebase';
+import { toast } from 'react-hot-toast';
 
 export function LoginModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
   const [email, setEmail] = useState('');
@@ -10,8 +12,33 @@ export function LoginModal({ isOpen, onClose }: { isOpen: boolean; onClose: () =
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    await signIn('credentials', { email, password, redirect: false });
-    onClose();
+    try {
+      await signInWithEmailAndPassword(auth, email, password);
+      toast.success('Signed in successfully');
+      onClose();
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to sign in');
+    }
+  };
+
+  const handleGoogleSignIn = async () => {
+    try {
+      await signInWithPopup(auth, new GoogleAuthProvider());
+      toast.success('Signed in with Google');
+      onClose();
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to sign in with Google');
+    }
+  };
+
+  const handleGithubSignIn = async () => {
+    try {
+      await signInWithPopup(auth, new GithubAuthProvider());
+      toast.success('Signed in with GitHub');
+      onClose();
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to sign in with GitHub');
+    }
   };
 
   return (
@@ -67,13 +94,13 @@ export function LoginModal({ isOpen, onClose }: { isOpen: boolean; onClose: () =
 
         <div className="mt-6 flex space-x-4">
           <button 
-            onClick={() => signIn('google')}
+            onClick={handleGoogleSignIn}
             className="w-1/2 flex items-center justify-center space-x-2 bg-bg-tertiary hover:bg-bg-tertiary/80 py-2 border border-border rounded-lg text-text-primary transition-colors"
           >
             <span>Google</span>
           </button>
           <button 
-            onClick={() => signIn('github')}
+            onClick={handleGithubSignIn}
             className="w-1/2 flex items-center justify-center space-x-2 bg-bg-tertiary hover:bg-bg-tertiary/80 py-2 border border-border rounded-lg text-text-primary transition-colors"
           >
             <span>GitHub</span>
