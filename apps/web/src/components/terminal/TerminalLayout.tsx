@@ -1,6 +1,7 @@
 import { ReactNode } from 'react';
 import { TopBar } from './TopBar';
 import { LeftSidebar } from './LeftSidebar';
+import { WatchlistSidebar } from './WatchlistSidebar';
 
 export function TerminalLayout({ children }: { children: ReactNode }) {
   return (
@@ -11,6 +12,7 @@ export function TerminalLayout({ children }: { children: ReactNode }) {
         <main className="flex-1 relative">
           {children}
         </main>
+        <WatchlistSidebar />
       </div>
     </div>
   );

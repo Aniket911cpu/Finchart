@@ -11,17 +11,17 @@ datasource db {
 
 model User {
   id            String        @id @default(cuid())
-  email         String        @unique
-  username      String        @unique
+  name          String?
+  email         String?       @unique
+  emailVerified DateTime?
+  image         String?
+  username      String?       @unique
   passwordHash  String?
-  displayName   String?
-  avatarUrl     String?
   plan          Plan          @default(FREE)
-  oauthProvider String?
-  oauthId       String?
   createdAt     DateTime      @default(now())
   updatedAt     DateTime      @updatedAt
 
+  accounts      Account[]
   sessions      Session[]
   watchlists    Watchlist[]
   alerts        Alert[]
@@ -29,6 +29,33 @@ model User {
   drawings      Drawing[]
   indicators    SavedIndicator[]
   notifications Notification[]
+}
+
+model Account {
+  id                 String  @id @default(cuid())
+  userId             String
+  type               String
+  provider           String
+  providerAccountId  String
+  refresh_token      String?  @db.Text
+  access_token       String?  @db.Text
+  expires_at         Int?
+  token_type         String?
+  scope              String?
+  id_token           String?  @db.Text
+  session_state      String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
 }
 
 enum Plan {
