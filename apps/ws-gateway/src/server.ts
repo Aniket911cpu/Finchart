@@ -26,37 +26,37 @@ redisSubscriber.on('pmessage', (pattern, channel, message) => {
 });
 
 app.register(async function (fastify) {
-  fastify.get('/', { websocket: true }, (connection, req) => {
+  fastify.get('/', { websocket: true }, (socket, req) => {
     
-    connection.socket.on('message', (message: string) => {
+    socket.on('message', (message: Buffer | string) => {
       try {
-        const data = JSON.parse(message);
+        const data = JSON.parse(message.toString());
         
         if (data.event === 'subscribe') {
           const { symbol, timeframe } = data.payload;
           if (symbol && timeframe) {
-            subscribeClient(connection.socket as any, `market:${symbol}:${timeframe}`);
+            subscribeClient(socket as any, `market:${symbol}:${timeframe}`);
           }
         } else if (data.event === 'unsubscribe') {
           const { symbol, timeframe } = data.payload;
           if (symbol && timeframe) {
-            unsubscribeClient(connection.socket as any, `market:${symbol}:${timeframe}`);
+            unsubscribeClient(socket as any, `market:${symbol}:${timeframe}`);
           }
         } else if (data.event === 'subscribe_alerts') {
           const { userId } = data.payload;
           if (userId) {
-            subscribeClient(connection.socket as any, `alerts:${userId}`);
+            subscribeClient(socket as any, `alerts:${userId}`);
           }
         } else if (data.event === 'ping') {
-          connection.socket.send(JSON.stringify({ event: 'pong' }));
+          socket.send(JSON.stringify({ event: 'pong' }));
         }
       } catch (err) {
         // Invalid JSON or message format
       }
     });
 
-    connection.socket.on('close', () => {
-      removeClientFromAll(connection.socket as any);
+    socket.on('close', () => {
+      removeClientFromAll(socket as any);
     });
   });
 });
