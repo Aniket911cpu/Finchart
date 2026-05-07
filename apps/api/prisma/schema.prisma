@@ -18,6 +18,8 @@ model User {
   username      String?       @unique
   passwordHash  String?
   plan          Plan          @default(FREE)
+  bio           String?
+  timezone      String?       @default("UTC")
   createdAt     DateTime      @default(now())
   updatedAt     DateTime      @updatedAt
 
@@ -32,6 +34,18 @@ model User {
   settings      UserSettings?
   apiKeys       ApiKey[]
   alertHistory  AlertHistory[]
+  // Social
+  ideas         Idea[]
+  ideaComments  IdeaComment[]
+  ideaLikes     IdeaLike[]
+  followers     Follow[]      @relation("followers")
+  following     Follow[]      @relation("following")
+  // Paper Trading
+  paperAccount  PaperAccount?
+  // Screener
+  savedScreeners SavedScreener[]
+  // Scripts
+  scripts       Script[]
 }
 
 model Account {
@@ -279,4 +293,161 @@ model AlertHistory {
   triggeredAt    DateTime @default(now())
   priceAtTrigger Float
   user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// ─── SOCIAL FEATURES ─────────────────────────────────
+
+enum Sentiment {
+  BULLISH
+  BEARISH
+  NEUTRAL
+}
+
+model Idea {
+  id          String        @id @default(cuid())
+  userId      String
+  title       String
+  body        String        @db.Text
+  chartImage  String?
+  symbol      String
+  timeframe   String
+  sentiment   Sentiment
+  isPublic    Boolean       @default(true)
+  viewCount   Int           @default(0)
+  likeCount   Int           @default(0)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  user        User          @relation(fields: [userId], references: [id])
+  comments    IdeaComment[]
+  likes       IdeaLike[]
+
+  @@index([symbol])
+  @@index([createdAt(sort: Desc)])
+}
+
+model IdeaComment {
+  id        String   @id @default(cuid())
+  ideaId    String
+  userId    String
+  body      String
+  createdAt DateTime @default(now())
+  idea      Idea     @relation(fields: [ideaId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id])
+}
+
+model IdeaLike {
+  userId    String
+  ideaId    String
+  createdAt DateTime @default(now())
+  idea      Idea     @relation(fields: [ideaId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id])
+
+  @@id([userId, ideaId])
+}
+
+model Follow {
+  followerId  String
+  followingId String
+  createdAt   DateTime @default(now())
+  follower    User     @relation("following", fields: [followerId], references: [id])
+  following   User     @relation("followers", fields: [followingId], references: [id])
+
+  @@id([followerId, followingId])
+}
+
+// ─── PAPER TRADING ───────────────────────────────────
+
+enum OrderSide {
+  BUY
+  SELL
+}
+
+enum OrderType {
+  MARKET
+  LIMIT
+  STOP_LOSS
+  TRAILING_STOP
+}
+
+enum OrderStatus {
+  PENDING
+  FILLED
+  CANCELLED
+  REJECTED
+}
+
+model PaperAccount {
+  id        String          @id @default(cuid())
+  userId    String          @unique
+  balance   Decimal         @default(100000.00) @db.Decimal(18, 2)
+  currency  String          @default("USD")
+  createdAt DateTime        @default(now())
+  user      User            @relation(fields: [userId], references: [id])
+  orders    PaperOrder[]
+  positions PaperPosition[]
+}
+
+model PaperOrder {
+  id          String       @id @default(cuid())
+  accountId   String
+  symbol      String
+  side        OrderSide
+  type        OrderType
+  quantity    Decimal      @db.Decimal(18, 8)
+  price       Decimal?     @db.Decimal(18, 8)
+  status      OrderStatus
+  filledAt    DateTime?
+  filledPrice Decimal?     @db.Decimal(18, 8)
+  createdAt   DateTime     @default(now())
+  account     PaperAccount @relation(fields: [accountId], references: [id])
+}
+
+model PaperPosition {
+  id            String       @id @default(cuid())
+  accountId     String
+  symbol        String
+  quantity      Decimal      @db.Decimal(18, 8)
+  avgEntryPrice Decimal      @db.Decimal(18, 8)
+  side          OrderSide
+  openedAt      DateTime     @default(now())
+  closedAt      DateTime?
+  realizedPnl   Decimal?     @db.Decimal(18, 8)
+  account       PaperAccount @relation(fields: [accountId], references: [id])
+
+  @@index([accountId, symbol])
+}
+
+// ─── SCREENER ────────────────────────────────────────
+
+model SavedScreener {
+  id        String   @id @default(cuid())
+  userId    String
+  name      String
+  config    Json
+  isPublic  Boolean  @default(false)
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id])
+}
+
+// ─── SCRIPTING ENGINE ────────────────────────────────
+
+enum ScriptType {
+  INDICATOR
+  STRATEGY
+  LIBRARY
+}
+
+model Script {
+  id          String     @id @default(cuid())
+  userId      String
+  name        String
+  description String?
+  code        String     @db.Text
+  version     Int        @default(1)
+  isPublic    Boolean    @default(false)
+  likeCount   Int        @default(0)
+  type        ScriptType
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  user        User       @relation(fields: [userId], references: [id])
 }

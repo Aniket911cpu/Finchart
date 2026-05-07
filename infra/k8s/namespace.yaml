@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: finchart
+  labels:
+    app.kubernetes.io/name: finchart
+    environment: production

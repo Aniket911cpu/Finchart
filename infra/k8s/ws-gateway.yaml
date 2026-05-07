@@ -1,0 +1,63 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ws-gateway
+  namespace: finchart
+  labels:
+    app: ws-gateway
+spec:
+  replicas: 2
+  selector:
+    matchLabels: { app: ws-gateway }
+  template:
+    metadata:
+      labels: { app: ws-gateway }
+    spec:
+      containers:
+        - name: ws-gateway
+          image: ghcr.io/aniket911cpu/finchart-ws-gateway:latest
+          ports:
+            - containerPort: 3002
+          envFrom:
+            - secretRef: { name: finchart-secrets }
+          resources:
+            requests: { cpu: 200m, memory: 256Mi }
+            limits:   { cpu: 1000m, memory: 1Gi }
+          readinessProbe:
+            tcpSocket: { port: 3002 }
+            initialDelaySeconds: 10
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ws-gateway
+  namespace: finchart
+  annotations:
+    # Required for sticky sessions (WebSocket connections)
+    service.beta.kubernetes.io/aws-load-balancer-type: "nlb"
+spec:
+  selector: { app: ws-gateway }
+  ports:
+    - protocol: TCP
+      port: 3002
+      targetPort: 3002
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: ws-gateway-hpa
+  namespace: finchart
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: ws-gateway
+  minReplicas: 2
+  maxReplicas: 20
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 60
