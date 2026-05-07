@@ -23,7 +23,7 @@ export function useAlerts() {
   });
 
   const createAlert = useMutation({
-    mutationFn: async (newAlert: Omit<Alert, 'id' | 'createdAt'>) => {
+    mutationFn: async (newAlert: Omit<Alert, 'id' | 'createdAt' | 'triggered'>) => {
       const { data } = await api.post('/alerts', newAlert);
       return data;
     },

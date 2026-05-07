@@ -44,7 +44,7 @@ export function AlertPanel({ onClose }: { onClose: () => void }) {
       if (wsClient.socket?.readyState === WebSocket.OPEN) {
         wsClient.socket.send(JSON.stringify({
           event: 'subscribe_alerts',
-          payload: { userId: session.user.id }
+          payload: { userId: (session?.user as any)?.id }
         }));
       }
 

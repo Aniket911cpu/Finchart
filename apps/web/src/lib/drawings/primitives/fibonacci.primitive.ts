@@ -16,12 +16,14 @@ const FIB_COLORS = ['#787B86', '#F44336', '#81C784', '#4CAF50', '#009688', '#64B
 
 class FibRenderer implements ISeriesPrimitivePaneRenderer {
   private _series: ISeriesApi<any>;
+  private _chart: any;
   private _p1: Point | null;
   private _p2: Point | null;
   private _options: FibOptions;
 
-  constructor(series: ISeriesApi<any>, p1: Point | null, p2: Point | null, options: FibOptions) {
+  constructor(series: ISeriesApi<any>, chart: any, p1: Point | null, p2: Point | null, options: FibOptions) {
     this._series = series;
+    this._chart = chart;
     this._p1 = p1;
     this._p2 = p2;
     this._options = options;
@@ -29,14 +31,14 @@ class FibRenderer implements ISeriesPrimitivePaneRenderer {
 
   draw(target: any) {
     target.useBitmapCoordinateSpace((scope: any) => {
-      if (!this._p1 || !this._p2) return;
+      if (!this._p1 || !this._p2 || !this._chart) return;
 
       const ctx = scope.context;
       
-      const x1 = this._series.priceScale().timeScale().timeToCoordinate(this._p1.time);
+      const x1 = this._chart.timeScale().timeToCoordinate(this._p1.time);
       const y1 = this._series.priceToCoordinate(this._p1.price);
       
-      const x2 = this._series.priceScale().timeScale().timeToCoordinate(this._p2.time);
+      const x2 = this._chart.timeScale().timeToCoordinate(this._p2.time);
       const y2 = this._series.priceToCoordinate(this._p2.price);
 
       if (x1 === null || y1 === null || x2 === null || y2 === null) return;
@@ -88,12 +90,14 @@ class FibRenderer implements ISeriesPrimitivePaneRenderer {
 
 class FibPaneView implements ISeriesPrimitivePaneView {
   private _series: ISeriesApi<any>;
+  private _chart: any;
   private _p1: Point | null;
   private _p2: Point | null;
   private _options: FibOptions;
 
-  constructor(series: ISeriesApi<any>, p1: Point | null, p2: Point | null, options: FibOptions) {
+  constructor(series: ISeriesApi<any>, chart: any, p1: Point | null, p2: Point | null, options: FibOptions) {
     this._series = series;
+    this._chart = chart;
     this._p1 = p1;
     this._p2 = p2;
     this._options = options;
@@ -104,12 +108,13 @@ class FibPaneView implements ISeriesPrimitivePaneView {
   }
 
   renderer(): ISeriesPrimitivePaneRenderer | null {
-    return new FibRenderer(this._series, this._p1, this._p2, this._options);
+    return new FibRenderer(this._series, this._chart, this._p1, this._p2, this._options);
   }
 }
 
 export class FibonacciPrimitive implements ISeriesPrimitive {
   private _series: ISeriesApi<any> | null = null;
+  private _chart: any = null;
   private _p1: Point | null = null;
   private _p2: Point | null = null;
   private _options: FibOptions;
@@ -123,11 +128,13 @@ export class FibonacciPrimitive implements ISeriesPrimitive {
   attached({ requestUpdate, chart, series }: any) {
     this.requestUpdate = requestUpdate;
     this._series = series;
+    this._chart = chart;
   }
 
   detached() {
     this.requestUpdate = undefined;
     this._series = null;
+    this._chart = null;
   }
 
   updateAllViews() {
@@ -135,8 +142,8 @@ export class FibonacciPrimitive implements ISeriesPrimitive {
   }
 
   paneViews() {
-    if (!this._series) return [];
-    return [new FibPaneView(this._series, this._p1, this._p2, this._options)];
+    if (!this._series || !this._chart) return [];
+    return [new FibPaneView(this._series, this._chart, this._p1, this._p2, this._options)];
   }
 
   setPoints(p1: Point, p2: Point | null) {

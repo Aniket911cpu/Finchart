@@ -1,0 +1,119 @@
+const FIB_LEVELS = [0, 0.236, 0.382, 0.5, 0.618, 0.786, 1];
+const FIB_COLORS = ['#787B86', '#F44336', '#81C784', '#4CAF50', '#009688', '#64B5F6', '#787B86'];
+class FibRenderer {
+    _series;
+    _chart;
+    _p1;
+    _p2;
+    _options;
+    constructor(series, chart, p1, p2, options) {
+        this._series = series;
+        this._chart = chart;
+        this._p1 = p1;
+        this._p2 = p2;
+        this._options = options;
+    }
+    draw(target) {
+        target.useBitmapCoordinateSpace((scope) => {
+            if (!this._p1 || !this._p2 || !this._chart)
+                return;
+            const ctx = scope.context;
+            const x1 = this._chart.timeScale().timeToCoordinate(this._p1.time);
+            const y1 = this._series.priceToCoordinate(this._p1.price);
+            const x2 = this._chart.timeScale().timeToCoordinate(this._p2.time);
+            const y2 = this._series.priceToCoordinate(this._p2.price);
+            if (x1 === null || y1 === null || x2 === null || y2 === null)
+                return;
+            const scaledX1 = Math.round(x1 * scope.horizontalPixelRatio);
+            const scaledY1 = Math.round(y1 * scope.verticalPixelRatio);
+            const scaledX2 = Math.round(x2 * scope.horizontalPixelRatio);
+            const scaledY2 = Math.round(y2 * scope.verticalPixelRatio);
+            const priceDiff = this._p2.price - this._p1.price;
+            const canvasWidth = scope.mediaSize.width * scope.horizontalPixelRatio;
+            // Draw trendline
+            ctx.beginPath();
+            ctx.moveTo(scaledX1, scaledY1);
+            ctx.lineTo(scaledX2, scaledY2);
+            ctx.setLineDash([5, 5]);
+            ctx.strokeStyle = this._options.color || '#787B86';
+            ctx.lineWidth = (this._options.width || 1) * scope.horizontalPixelRatio;
+            ctx.stroke();
+            ctx.setLineDash([]);
+            // Draw fib levels
+            for (let i = 0; i < FIB_LEVELS.length; i++) {
+                const level = FIB_LEVELS[i];
+                const price = this._p1.price + priceDiff * level;
+                const y = this._series.priceToCoordinate(price);
+                if (y === null)
+                    continue;
+                const scaledY = Math.round(y * scope.verticalPixelRatio);
+                ctx.beginPath();
+                // Start from x1 and extend to the right edge
+                ctx.moveTo(scaledX1, scaledY);
+                ctx.lineTo(canvasWidth, scaledY);
+                ctx.strokeStyle = FIB_COLORS[i];
+                ctx.lineWidth = 1 * scope.horizontalPixelRatio;
+                ctx.stroke();
+                // Draw level text
+                ctx.fillStyle = FIB_COLORS[i];
+                ctx.font = `${12 * scope.horizontalPixelRatio}px Arial`;
+                ctx.fillText(`${(level * 100).toFixed(1)}% (${price.toFixed(2)})`, scaledX1 + 5 * scope.horizontalPixelRatio, scaledY - 5 * scope.verticalPixelRatio);
+            }
+        });
+    }
+}
+class FibPaneView {
+    _series;
+    _chart;
+    _p1;
+    _p2;
+    _options;
+    constructor(series, chart, p1, p2, options) {
+        this._series = series;
+        this._chart = chart;
+        this._p1 = p1;
+        this._p2 = p2;
+        this._options = options;
+    }
+    zOrder() {
+        return 'normal';
+    }
+    renderer() {
+        return new FibRenderer(this._series, this._chart, this._p1, this._p2, this._options);
+    }
+}
+export class FibonacciPrimitive {
+    _series = null;
+    _chart = null;
+    _p1 = null;
+    _p2 = null;
+    _options;
+    requestUpdate;
+    constructor(options = {}) {
+        this._options = options;
+    }
+    attached({ requestUpdate, chart, series }) {
+        this.requestUpdate = requestUpdate;
+        this._series = series;
+        this._chart = chart;
+    }
+    detached() {
+        this.requestUpdate = undefined;
+        this._series = null;
+        this._chart = null;
+    }
+    updateAllViews() {
+        this.requestUpdate?.();
+    }
+    paneViews() {
+        if (!this._series || !this._chart)
+            return [];
+        return [new FibPaneView(this._series, this._chart, this._p1, this._p2, this._options)];
+    }
+    setPoints(p1, p2) {
+        this._p1 = p1;
+        this._p2 = p2;
+        this.updateAllViews();
+    }
+}
+//# sourceMappingURL=fibonacci.primitive.js.map
