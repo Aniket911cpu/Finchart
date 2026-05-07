@@ -12,7 +12,7 @@ app.register(fastifyWebsocket);
 // Redis connection for subscribing to pub/sub
 const redisSubscriber = new Redis(REDIS_URL);
 
-redisSubscriber.psubscribe('market:*', (err, count) => {
+redisSubscriber.psubscribe('market:*', 'alerts:*', (err, count) => {
   if (err) {
     console.error('Failed to psubscribe:', err);
   } else {
@@ -21,7 +21,7 @@ redisSubscriber.psubscribe('market:*', (err, count) => {
 });
 
 redisSubscriber.on('pmessage', (pattern, channel, message) => {
-  // Broadcast this tick to any connected WS clients listening to this channel
+  // Broadcast this message to any connected WS clients listening to this channel
   broadcastToChannel(channel, message);
 });
 
@@ -35,12 +35,17 @@ app.register(async function (fastify) {
         if (data.event === 'subscribe') {
           const { symbol, timeframe } = data.payload;
           if (symbol && timeframe) {
-            subscribeClient(connection.socket as any, symbol, timeframe);
+            subscribeClient(connection.socket as any, `market:${symbol}:${timeframe}`);
           }
         } else if (data.event === 'unsubscribe') {
           const { symbol, timeframe } = data.payload;
           if (symbol && timeframe) {
-            unsubscribeClient(connection.socket as any, symbol, timeframe);
+            unsubscribeClient(connection.socket as any, `market:${symbol}:${timeframe}`);
+          }
+        } else if (data.event === 'subscribe_alerts') {
+          const { userId } = data.payload;
+          if (userId) {
+            subscribeClient(connection.socket as any, `alerts:${userId}`);
           }
         } else if (data.event === 'ping') {
           connection.socket.send(JSON.stringify({ event: 'pong' }));

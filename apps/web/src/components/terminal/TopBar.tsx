@@ -4,9 +4,11 @@ import { useSession, signOut } from 'next-auth/react';
 import { SymbolSearch } from '../shared/SymbolSearch';
 import { ThemeSwitcher } from '../shared/ThemeSwitcher';
 import { TimeframeSelector } from '../chart/TimeframeSelector';
+import { ChartTypeSelector } from '../chart/ChartTypeSelector';
 import { LayoutManager } from './LayoutManager';
-import { Activity, User } from 'lucide-react';
+import { Activity, User, Bell } from 'lucide-react';
 import { LoginModal } from '../auth/LoginModal';
+import { useChartStore } from '../../store/chartStore';
 
 export function TopBar() {
   const { data: session } = useSession();
@@ -14,7 +16,7 @@ export function TopBar() {
 
   return (
     <>
-      <div className="h-14 border-b border-border bg-bg-secondary flex items-center justify-between px-4">
+      <div className="h-14 border-b border-border bg-bg-secondary flex items-center justify-between px-4 shrink-0 z-50">
         <div className="flex items-center space-x-6">
           <div className="flex items-center space-x-2 text-accent-blue font-bold text-lg">
             <Activity size={24} />
@@ -26,11 +28,24 @@ export function TopBar() {
           
           <div className="h-6 w-px bg-border"></div>
           <TimeframeSelector />
+
+          <div className="h-6 w-px bg-border"></div>
+          <ChartTypeSelector />
         </div>
 
         <div className="flex items-center space-x-4">
           <LayoutManager />
           
+          <div className="h-6 w-px bg-border"></div>
+
+          <button 
+            onClick={() => useChartStore.getState().setAlertsOpen(!useChartStore.getState().isAlertsOpen)}
+            className={`p-1.5 rounded transition-colors ${useChartStore.getState().isAlertsOpen ? 'bg-accent-blue/20 text-accent-blue' : 'text-text-secondary hover:text-text-primary hover:bg-bg-tertiary'}`}
+            title="Price Alerts"
+          >
+            <Bell size={18} />
+          </button>
+
           <div className="h-6 w-px bg-border"></div>
 
           <ThemeSwitcher />

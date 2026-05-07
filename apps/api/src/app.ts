@@ -5,6 +5,7 @@ import { pino } from 'pino';
 import udfRoutes from './modules/market/udf.controller'; // Ensure correct import for UDF routes
 import layoutRoutes from './modules/layouts/layout.router';
 import watchlistRoutes from './modules/watchlists/watchlist.router';
+import { alertRouter } from './modules/alerts/alert.router';
 
 export function buildApp() {
   const app = Fastify({
@@ -44,6 +45,7 @@ export function buildApp() {
     protectedApp.addHook('onRequest', protectedApp.authenticate);
     protectedApp.register(layoutRoutes, { prefix: '/layouts' });
     protectedApp.register(watchlistRoutes, { prefix: '/watchlists' });
+    protectedApp.register(alertRouter, { prefix: '/alerts' });
   });
 
   return app;

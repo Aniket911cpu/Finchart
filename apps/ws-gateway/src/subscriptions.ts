@@ -3,9 +3,7 @@ import { WebSocket } from 'ws';
 // Map of channel -> Set of connected WebSocket clients
 const subscriptions = new Map<string, Set<WebSocket>>();
 
-export function subscribeClient(ws: WebSocket, symbol: string, timeframe: string) {
-  const channel = `market:${symbol}:${timeframe}`;
-  
+export function subscribeClient(ws: WebSocket, channel: string) {
   if (!subscriptions.has(channel)) {
     subscriptions.set(channel, new Set());
   }
@@ -17,8 +15,7 @@ export function subscribeClient(ws: WebSocket, symbol: string, timeframe: string
   (ws as any)._channels.add(channel);
 }
 
-export function unsubscribeClient(ws: WebSocket, symbol: string, timeframe: string) {
-  const channel = `market:${symbol}:${timeframe}`;
+export function unsubscribeClient(ws: WebSocket, channel: string) {
   
   const clients = subscriptions.get(channel);
   if (clients) {

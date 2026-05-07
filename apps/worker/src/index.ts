@@ -1,8 +1,10 @@
 import { startBinanceIngestion } from './jobs/binanceIngestion';
+import { startAlertProcessor } from './jobs/alertProcessor';
 
 console.log('Starting FinChart Pro background worker...');
 
 // Start Binance realtime ingestion
 startBinanceIngestion();
 
-// Here we would also configure BullMQ queues if needed for other jobs
+// Start Alert Processor
+startAlertProcessor();
