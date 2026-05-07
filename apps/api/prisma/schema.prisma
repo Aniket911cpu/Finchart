@@ -1,0 +1,217 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─── USERS ───────────────────────────────────────────────────────
+
+model User {
+  id            String        @id @default(cuid())
+  email         String        @unique
+  username      String        @unique
+  passwordHash  String?
+  displayName   String?
+  avatarUrl     String?
+  plan          Plan          @default(FREE)
+  oauthProvider String?
+  oauthId       String?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  sessions      Session[]
+  watchlists    Watchlist[]
+  alerts        Alert[]
+  layouts       Layout[]
+  drawings      Drawing[]
+  indicators    SavedIndicator[]
+  notifications Notification[]
+}
+
+enum Plan {
+  FREE
+  PRO
+  ENTERPRISE
+}
+
+// ─── SESSIONS ────────────────────────────────────────────────────
+
+model Session {
+  id          String   @id @default(cuid())
+  userId      String
+  token       String   @unique
+  deviceInfo  String?
+  ipAddress   String?
+  expiresAt   DateTime
+  createdAt   DateTime @default(now())
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// ─── WATCHLISTS ──────────────────────────────────────────────────
+
+model Watchlist {
+  id        String          @id @default(cuid())
+  userId    String
+  name      String
+  isDefault Boolean         @default(false)
+  createdAt DateTime        @default(now())
+  updatedAt DateTime        @updatedAt
+  user      User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  symbols   WatchlistItem[]
+}
+
+model WatchlistItem {
+  id          String    @id @default(cuid())
+  watchlistId String
+  symbol      String
+  assetClass  AssetClass
+  exchange    String?
+  sortOrder   Int       @default(0)
+  addedAt     DateTime  @default(now())
+  watchlist   Watchlist @relation(fields: [watchlistId], references: [id], onDelete: Cascade)
+
+  @@unique([watchlistId, symbol])
+  @@index([symbol])
+}
+
+enum AssetClass {
+  STOCK
+  CRYPTO
+  FOREX
+  COMMODITY
+  INDEX
+}
+
+// ─── ALERTS ──────────────────────────────────────────────────────
+
+model Alert {
+  id          String      @id @default(cuid())
+  userId      String
+  symbol      String
+  name        String
+  type        AlertType
+  condition   AlertCondition
+  value       Float
+  indicator   String?     // for indicator alerts
+  timeframe   String?
+  isActive    Boolean     @default(true)
+  triggered   Boolean     @default(false)
+  triggeredAt DateTime?
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([symbol, isActive])
+}
+
+enum AlertType {
+  PRICE
+  INDICATOR
+  VOLUME
+  PERCENT_CHANGE
+}
+
+enum AlertCondition {
+  CROSSES_ABOVE
+  CROSSES_BELOW
+  GREATER_THAN
+  LESS_THAN
+  EQUALS
+}
+
+// ─── LAYOUTS ─────────────────────────────────────────────────────
+
+model Layout {
+  id          String   @id @default(cuid())
+  userId      String
+  name        String
+  config      Json     // stores panel positions, sizes, widgets
+  isDefault   Boolean  @default(false)
+  thumbnail   String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// ─── DRAWINGS ────────────────────────────────────────────────────
+
+model Drawing {
+  id          String      @id @default(cuid())
+  userId      String
+  symbol      String
+  timeframe   String
+  type        DrawingType
+  data        Json        // coordinates, style, text, etc.
+  version     Int         @default(1)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, symbol, timeframe])
+}
+
+enum DrawingType {
+  TREND_LINE
+  HORIZONTAL_LINE
+  FIBONACCI
+  RECTANGLE
+  POSITION_TOOL
+  TEXT
+  BRUSH
+}
+
+// ─── SAVED INDICATORS ────────────────────────────────────────────
+
+model SavedIndicator {
+  id        String   @id @default(cuid())
+  userId    String
+  name      String
+  type      String   // SMA, EMA, RSI, custom...
+  config    Json     // period, colors, parameters
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// ─── NOTIFICATIONS ───────────────────────────────────────────────
+
+model Notification {
+  id        String           @id @default(cuid())
+  userId    String
+  type      NotificationType
+  title     String
+  body      String
+  read      Boolean          @default(false)
+  metadata  Json?
+  createdAt DateTime         @default(now())
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, read])
+}
+
+enum NotificationType {
+  ALERT_TRIGGERED
+  SYSTEM
+  PRICE_MOVEMENT
+  NEWS
+}
+
+// ─── MARKET CACHE METADATA ───────────────────────────────────────
+
+model MarketSymbol {
+  id          String     @id @default(cuid())
+  symbol      String     @unique
+  name        String
+  assetClass  AssetClass
+  exchange    String
+  currency    String
+  logoUrl     String?
+  isActive    Boolean    @default(true)
+  metadata    Json?
+  updatedAt   DateTime   @updatedAt
+
+  @@index([assetClass])
+  @@index([exchange])
+}
